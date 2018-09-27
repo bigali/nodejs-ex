@@ -181,10 +181,7 @@ app.get('/getInfoPlayNow', (req, res) => {
                         let ress = result.map(song => {
                             return extractSong(song)
                         });
-                        return res.json({
-                            success: true,
-                            response: songs.concat(ress)
-                        })
+                        return res.send(songs.concat(ress))
                     }
 
                 });
