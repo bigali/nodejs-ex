@@ -161,11 +161,15 @@ app.get('/getInfoPlayNow', (req, res) => {
 
         var relatedVideos = info.related_videos
 
-        var songs = [extractSong(info)];
+        var songs = [info];
+        var stack = []
         for (var i=0; i<relatedVideos.length; i++){
             var id= relatedVideos[i].id || relatedVideos[i].video_id
             if(id) {
-                ytdl.getInfo(id, (err, info) => {
+                stack.push(function (cb) {
+                    ytdl.getInfo(id, cb)
+                })
+                async.parallel(stack, function(err, result) {
                     if (err) {
                         return res.json({
                             success: false,
@@ -173,11 +177,11 @@ app.get('/getInfoPlayNow', (req, res) => {
                         })
                     }
 
-                    songs.push(extractSong(info))
-                    if(i === songs.length - 1) {
-                        res.send(songs)
+                    if(i === result.length) {
+                        return res.send(songs.concat(result))
                     }
-                })
+
+                });
             }
 
         }
@@ -202,7 +206,6 @@ var asyncParallel = function(tasks, callback) {
 };
 
 app.get('/getInfoList', (req, res) => {
-    console.log("1")
     var arr = JSON.parse(req.query.array);
 
     var songs = [];
