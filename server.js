@@ -5,6 +5,8 @@ var express = require('express'),
 
 const ytdl = require('ytdl-core')
 const _ = require('lodash')
+const async = require('async')
+
     
 Object.assign=require('object-assign')
 
@@ -182,13 +184,34 @@ app.get('/getInfoPlayNow', (req, res) => {
     })
 })
 
+var asyncParallel = function(tasks, callback) {
+    var results = [];
+    var count = tasks.length;
+    tasks.forEach(function(task, index) {
+        task(function(err, data) {
+            results[index] = data;
+            if (err) {
+                callback && callback(err);
+                callback = null;
+            }
+            if (--count === 0 && callback) {
+                callback(null, results);
+            }
+        });
+    });
+};
+
 app.get('/getInfoList', (req, res) => {
     console.log("1")
     var arr = JSON.parse(req.query.array);
 
     var songs = [];
+    var stack = []
     for (var i=0; i<arr.length; i++){
-        ytdl.getInfo(arr[i], (err, info) => {
+        stack.push(function (cb) {
+            ytdl.getInfo(arr[i], cb)
+        })
+        async.parallel(stack, function(err, result) {
             if (err) {
                 return res.json({
                     success: false,
@@ -196,12 +219,14 @@ app.get('/getInfoList', (req, res) => {
                 })
             }
 
-            songs.push(extractSong(info))
-            if(i === songs.length) {
-                res.send(songs)
+            if(i === result.length) {
+                return res.send(result)
             }
-        })
+
+        });
     }
+
+
 
 })
 
