@@ -161,7 +161,7 @@ app.get('/getInfoPlayNow', (req, res) => {
 
         var relatedVideos = info.related_videos
 
-        var songs = [info];
+        var songs = [extractSong(info)];
         var stack = []
         for (var i=0; i<relatedVideos.length; i++){
             var id= relatedVideos[i].id || relatedVideos[i].video_id
@@ -178,7 +178,13 @@ app.get('/getInfoPlayNow', (req, res) => {
                     }
 
                     if(i === result.length) {
-                        return res.send(songs.concat(result))
+                        let ress = result.map(song => {
+                            return extractSong(song)
+                        });
+                        return res.json({
+                            success: true,
+                            response: songs.concat(ress)
+                        })
                     }
 
                 });
