@@ -2,6 +2,9 @@
 var express = require('express'),
     app     = express(),
     morgan  = require('morgan');
+
+const ytdl = require('ytdl-core')
+const _ = require('lodash')
     
 Object.assign=require('object-assign')
 
@@ -96,6 +99,111 @@ app.get('/pagecount', function (req, res) {
     res.send('{ pageCount: -1 }');
   }
 });
+
+app.get('/getInfo', (req, res) => {
+    ytdl.getInfo(req.query.id, (err, info) => {
+        if (err) {
+            return res.json({
+                success: false,
+                response: err
+            })
+        }
+
+        const song = extractSong(info)
+
+        res.json({
+            success: true,
+            response: song
+        })
+
+    })
+})
+
+const extractSong = (info) => {
+    const fullTitle = _.get(info, 'player_response.videoDetails.title')
+    const titleAuthor = fullTitle.split(' - ')
+    const author = titleAuthor[0]
+    let title = titleAuthor[1]
+    if(title) {
+        title = title.replace(/ *\([^)]*\) */g, "")
+        title = title.replace(/ *\[[^\]]*]/, '')
+    }
+
+    const length = _.get(info, 'player_response.videoDetails.lengthSeconds')
+    const thumbnail = _.get(info, 'player_response.videoDetails.thumbnail.thumbnails[3].url')
+    const format = ytdl.chooseFormat(info.formats, { quality: '140' })
+
+
+
+
+    const song = {
+        title: title,
+        author: author,
+        length: length,
+        thumbnail: thumbnail,
+        url: format.url
+    }
+
+    return song
+}
+
+app.get('/getInfoPlayNow', (req, res) => {
+    ytdl.getInfo(req.query.id, (err, info) => {
+
+        if (err) {
+            return res.json({
+                success: false,
+                response: err
+            })
+        }
+
+        var relatedVideos = info.related_videos
+
+        var songs = [extractSong(info)];
+        for (var i=0; i<relatedVideos.length; i++){
+            var id= relatedVideos[i].id || relatedVideos[i].video_id
+            if(id) {
+                ytdl.getInfo(id, (err, info) => {
+                    if (err) {
+                        return res.json({
+                            success: false,
+                            response: err
+                        })
+                    }
+
+                    songs.push(extractSong(info))
+                    if(i === songs.length - 1) {
+                        res.send(songs)
+                    }
+                })
+            }
+
+        }
+    })
+})
+
+app.get('/getInfoList', (req, res) => {
+    console.log("1")
+    var arr = JSON.parse(req.query.array);
+
+    var songs = [];
+    for (var i=0; i<arr.length; i++){
+        ytdl.getInfo(arr[i], (err, info) => {
+            if (err) {
+                return res.json({
+                    success: false,
+                    response: err
+                })
+            }
+
+            songs.push(extractSong(info))
+            if(i === songs.length) {
+                res.send(songs)
+            }
+        })
+    }
+
+})
 
 // error handling
 app.use(function(err, req, res, next){

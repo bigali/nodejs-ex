@@ -8,10 +8,12 @@
     "chai-http": "^2.0.1",
     "ejs": "^2.4.1",
     "express": "^4.13.4",
+    "lodash": "^4.17.11",
     "mocha": "^2.4.5",
     "mongodb": "^2.1.16",
     "morgan": "^1.7.0",
-    "object-assign": "4.1.0"
+    "object-assign": "4.1.0",
+    "ytdl-core": "^0.26.0"
   },
   "engine": {
     "node": "*",
