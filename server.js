@@ -182,7 +182,7 @@ app.get('/getInfoPlayNow', (req, res) => {
                     for (let song of result) {
                         songs.push(extractSong(song))
                     }
-                    return res.send(songs)
+                    return res.json(songs)
                 });
             }
         }
