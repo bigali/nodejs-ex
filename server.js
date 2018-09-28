@@ -135,14 +135,14 @@ const extractSong = (info) => {
     const length = _.get(info, 'player_response.videoDetails.lengthSeconds')
     const thumbnail = _.get(info, 'player_response.videoDetails.thumbnail.thumbnails[3].url')
     const format = ytdl.chooseFormat(info.formats, {quality: '140'})
-
+    const id = info.id || info.video_id
 
     const song = {
-        id:  info.id || info.video_id,
+        id:  id,
         title: title,
         author: author,
         length: length,
-        thumbnail: thumbnail,
+        thumbnail: `http://i.ytimg.com/vi/${id}/maxresdefault.jpg`,
         url: format.url
     }
 
