@@ -142,7 +142,7 @@ const extractSong = (info) => {
         title: title,
         author: author,
         length: length,
-        thumbnail: `http://i.ytimg.com/vi/${id}/maxresdefault.jpg`,
+        thumbnail: `http://i.ytimg.com/vi/${id}/sddefault.jpg`,
         url: format.url
     }
 
